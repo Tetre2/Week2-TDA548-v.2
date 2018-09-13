@@ -45,7 +45,7 @@ public class Ex5GameOfLife extends Application {
 	public void init() {
 		//test();        // <--------------- Uncomment to test!
 		int nLocations = 900;
-		double distribution = 0.4;   // % of locations holding a Cell
+		double distribution = 0.1;   // % of locations holding a Cell
 
 		world = new Cell[(int) Math.sqrt(nLocations)][(int) Math.sqrt(nLocations)];
 
@@ -69,17 +69,34 @@ public class Ex5GameOfLife extends Application {
 	// Every involved method should be tested, see below, method test()
 	// This method is automatically called by a JavaFX timer (don't need to call it)
 	void update(long now) {
-		if (now - timeLastUpdate > 500_000_000) {  // Has time passed?
+		if (now - timeLastUpdate > 900_000_000) {  // Has time passed?
 			// TODO update world
 			timeLastUpdate = now;
 			
-			//Cell[][] temp = world[][];		HELP!!!!!!!!
+			System.out.println("Tick");
+			
+			//Cell[][] temp = new Cell[world.length][world.length];
+			//temp = world;
+			
 			
 			for (int i = 0; i < world.length; i++) {
 				for (int j = 0; j < world[i].length; j++) {
-					//world[i][j];
+					
+					if(checkCells(j, i, world)) {
+						
+						//temp[i][j] = Cell.ALIVE;
+						world[j][i] = Cell.ALIVE;
+						
+					}else {
+						
+						world[j][i] = Cell.DEAD;
+						//temp[i][j] = Cell.DEAD;
+					}
+					
 				}
 			}
+			
+			//world = temp;
 			
 		}
 	}
@@ -89,19 +106,21 @@ public class Ex5GameOfLife extends Application {
 
 	boolean checkCells(int x, int y, Cell[][] c) {
 		
-		if(isOverPolulated(x, y, c)) {
-			return false;
-		}else if(isUnderPolulated(x, y, c)) {
-			return false;
-		}else if(livesToNextGen(x, y, c)) {
+		if(reproduction(y, x, c)) {
+			System.out.println(reproduction(y, x, c));
 			return true;
-		}else if(reproduction(x, y, c)) {
+		}else if(livesToNextGen(y, x, c)) {
+			return true;
+		}else if(isOverPolulated(y, x, c)) {
+			return false;
+		}else if(isUnderPolulated(y, x, c)) {
+			return false;
+		}else {
 			return false;
 		}
-		return false;
 	}
 
-	int amountOfAliveCellsInArea(int x, int y, Cell[][] c) {
+	int amountOfAliveCellsInArea(int y, int x, Cell[][] c) {
 		int alive = 0;
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
@@ -109,7 +128,7 @@ public class Ex5GameOfLife extends Application {
 				int indexX = x+j;
 				int indexY = y+i;
 
-				if(indexX < 0 || indexX >= c[0].length) {//Förutsätter att det är en kvadratisk matris. 
+				if(indexX < 0 || indexX >= c[0].length) {//Forutsatter att det ar en kvadratisk matris. 
 
 				}else if(indexY < 0 || indexY >= c.length) {
 
@@ -120,6 +139,12 @@ public class Ex5GameOfLife extends Application {
 			}
 
 		}
+		
+		if(c[y][x].equals(Cell.ALIVE)) {
+			alive -= 1; //metoden raknar med sig sjlalv en gang
+		}
+		
+		
 		return alive;
 	}
 
@@ -127,11 +152,12 @@ public class Ex5GameOfLife extends Application {
 	//if more than 3
 	boolean isOverPolulated(int x, int y, Cell[][] c) {
 		
-		if(c[x][y].equals(Cell.DEAD)) {
+		
+		if(c[y][x].equals(Cell.DEAD)) {
 			return false;		//Not Alive!!!
 		}
 		
-		if(amountOfAliveCellsInArea(x, y, c) > 3) {
+		if(amountOfAliveCellsInArea(y, x, c) > 3) {
 			return true;
 		}else {
 			return false;
@@ -142,11 +168,11 @@ public class Ex5GameOfLife extends Application {
 	//if less than 2
 	boolean isUnderPolulated(int x, int y, Cell[][] c) {
 		
-		if(c[x][y].equals(Cell.DEAD)) {
+		if(c[y][x].equals(Cell.DEAD)) {
 			return false;		//Not Alive!!!
 		}
 		
-		if(amountOfAliveCellsInArea(x, y, c) < 2) {
+		if(amountOfAliveCellsInArea(y, x, c) < 2) {
 			return true;
 		}else {
 			return false;
@@ -156,11 +182,11 @@ public class Ex5GameOfLife extends Application {
 	//if 2 or 3 cell lives on
 	boolean livesToNextGen(int x, int y, Cell[][] c) {
 		
-		if(c[x][y].equals(Cell.DEAD)) {
+		if(c[y][x].equals(Cell.DEAD)) {
 			return false;		//Not Alive!!!
 		}
 		
-		int amount = amountOfAliveCellsInArea(x, y, c);
+		int amount = amountOfAliveCellsInArea(y, x, c);
 		
 		if((amount == 3 || amount == 2)) {
 			return true;
@@ -170,15 +196,14 @@ public class Ex5GameOfLife extends Application {
 
 	}
 
-	
-	//if 3 dead cell becomes alive 
+	//if 3 alive, dead cell becomes alive 
 	boolean reproduction(int x, int y, Cell[][] c) {
 		
-		if(c[x][y].equals(Cell.ALIVE)) {
+		if(c[y][x].equals(Cell.ALIVE)) {
 			return false;		//Not Dead!!!
 		}
 		
-		if(amountOfAliveCellsInArea(x, y, c) == 3) {
+		if(amountOfAliveCellsInArea(y, x, c) == 3) {
 			return true;
 		}else {
 			return false;
@@ -192,7 +217,7 @@ public class Ex5GameOfLife extends Application {
 	void test() {
 		// Hard coded test world
 		Cell[][] testWorld = {
-				{Cell.ALIVE, Cell.DEAD, Cell.DEAD},
+				{Cell.ALIVE, Cell.ALIVE, Cell.DEAD},
 				{Cell.ALIVE, Cell.DEAD, Cell.DEAD},
 				{Cell.DEAD, Cell.DEAD, Cell.DEAD},
 
@@ -200,8 +225,11 @@ public class Ex5GameOfLife extends Application {
 		int size = testWorld.length;
 
 
+		System.out.println(amountOfAliveCellsInArea(1, 1, testWorld));
+		System.out.println(reproduction(1, 1, testWorld));
+		System.out.println(isOverPolulated(1, 1, testWorld));
 		System.out.println(isUnderPolulated(1, 1, testWorld));
-
+		System.out.println(livesToNextGen(1, 1, testWorld));
 
 
 		exit(0);
